@@ -52,12 +52,12 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include "system_config.h"
-#include "system_definitions.h"
+#include <stdint.h> // Inclusion des definitions de types entiers standard
+#include <stdbool.h> // Inclusion du type booleen standard
+#include <stddef.h> // Inclusion des definitions de tailles et pointeurs standard
+#include <stdlib.h> // Inclusion des fonctions utilitaires generales
+#include "system_config.h" // Inclusion de la configuration systeme
+#include "system_definitions.h" // Inclusion des definitions systeme
 
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
@@ -75,137 +75,136 @@ extern "C" {
 
     // *****************************************************************************
 
-    /* Application states
+    /* Etats de l'application
 
-      Summary:
-        Application states enumeration
+      Resume:
+        Enumeration des etats de l'application
 
       Description:
-        This enumeration defines the valid application states.  These states
-        determine the behavior of the application at various times.
+        Cette enumeration definit les etats valides de l'application.  Ces etats
+        determinent le comportement de l'application a differents moments.
      */
 
     typedef enum {
-        /* Application's state machine's initial state. */
+        /* etat initial de la machine d'etats de l'application. */
         APP_STATE_INIT = 0,
         APP_STATE_WAIT,
         APP_STATE_INIT_WAIT,
         APP_STATE_SERVICE_TASKS,
 
-        /* TODO: Define states used by the application state machine. */
+        /* TODO: Definir les etats utilises par la machine d'etats de l'application. */
 
     } APP_STATES;
 
 
     // *****************************************************************************
 
-    /* Application Data
+    /* Donnees de l'application
 
-          Summary:
-            Holds application data
+          Resume :
+            Contient les donnees de l'application
 
-          Description:
-            This structure holds the application's data.
+          Description :
+            Cette structure contient les donnees utilisees par l'application.
 
-          Remarks:
-            Application strings and buffers are be defined outside this structure.
+          Remarques :
+            Les chaines et buffers de l'application sont definis en dehors de cette structure.
      */
-#define RPM_CAPTURE_BUFFER_SIZE 8
+#define RPM_CAPTURE_BUFFER_SIZE 8 // Taille du buffer de capture RPM
 
     typedef struct {
-        uint8_t state;
-        uint8_t currentMenu;
+        uint8_t state; // etat courant de l'application
+        uint8_t currentMenu; // Menu courant selectionne
 
-        volatile bool rpmCaptureActive;
-        volatile uint32_t captureBuffer[RPM_CAPTURE_BUFFER_SIZE];
-        volatile uint8_t captureIndex;
-        uint32_t rpm;
-        uint8_t nbBlades;
-        uint8_t nbCylindres;
-        bool refreshNeeded;
+        volatile bool rpmCaptureActive; // Indique si la capture RPM est active
+        volatile uint32_t captureBuffer[RPM_CAPTURE_BUFFER_SIZE]; // Buffer circulaire pour les captures
+        volatile uint8_t captureIndex; // Index courant dans le buffer de capture
+        uint32_t rpm; // Valeur RPM calculee
+        uint8_t nbBlades; // Nombre de pales
+        uint8_t nbCylindres; // Nombre de cylindres
+        bool refreshNeeded; // Indique si un rafraichissement de l'affichage est necessaire
         uint8_t  selectedProfil;   // 0-3 : profil actif
     } APP_DATA;
 
-    extern APP_DATA appData;
+    extern APP_DATA appData; // Declaration de la variable globale des donnees de l'application
 
     // *****************************************************************************
+    // Section : Routines de rappel (callbacks) de l'application
     // *****************************************************************************
-    // Section: Application Callback Routines
-    // *****************************************************************************
-    // *****************************************************************************
+    /**
+     * @brief Callback du Timer1 pour la gestion de l'initialisation et des tâches periodiques.
+     *
+     * @details
+     * Cette fonction utilise un compteur pour attendre 3 secondes apres le demarrage,
+     * puis execute periodiquement les tâches de service. Elle met a jour l'etat de l'application
+     * en consequence.
+     *
+     * @param Aucun parametre.
+     * @return Aucun retour.
+     *
+     * @pre Le systeme doit etre initialise avant d'appeler cette fonction.
+     * @post L'etat de l'application est mis a jour selon l'avancement de l'initialisation.
+     */
     void App_Timer1Callback();
+    /**
+     * @brief Callback pour la capture d'impulsions RPM.
+     *
+     * @details
+     * Cette fonction lit les valeurs capturees par l'input capture et les stocke dans un buffer circulaire
+     * si la capture RPM est active.
+     *
+     * @param Aucun parametre.
+     * @return Aucun retour.
+     *
+     * @pre La capture RPM doit etre active.
+     * @post Le buffer de capture est mis a jour avec la nouvelle valeur.
+     */
     void DRV_IC3_Callback(void);
     // *****************************************************************************
+    // Section : Fonctions d'initialisation et de gestion de la machine d'etat de l'application
     // *****************************************************************************
-    // Section: Application Initialization and State Machine Functions
-    // *****************************************************************************
-    // *****************************************************************************
+    /**
+     * @brief Met a jour l'etat actuel de l'application.
+     *
+     * @details
+     * Cette fonction met a jour la variable globale `appData.state` avec
+     * la valeur de l'etat fourni en parametre.
+     *
+     * @param Newstate Nouveau etat a affecter a l'application (type APP_STATES).
+     * @return Aucun retour.
+     *
+     * @pre Aucun prerequis specifique.
+     * @post L'etat de l'application est mis a jour.
+     */
     void APP_UpdateState(APP_STATES Newstate);
 
-    /*******************************************************************************
-      Function:
-        void APP_Initialize ( void )
-
-      Summary:
-         MPLAB Harmony application initialization routine.
-
-      Description:
-        This function initializes the Harmony application.  It places the 
-        application in its initial state and prepares it to run so that its 
-        APP_Tasks function can be called.
-
-      Precondition:
-        All other system initialization routines should be called before calling
-        this routine (in "SYS_Initialize").
-
-      Parameters:
-        None.
-
-      Returns:
-        None.
-
-      Example:
-        <code>
-        APP_Initialize();
-        </code>
-
-      Remarks:
-        This routine must be called from the SYS_Initialize function.
+    /**
+     * @brief Initialise l'application et place la machine d'etat dans son etat initial.
+     *
+     * @details
+     * Cette fonction initialise l'etat de l'application a APP_STATE_INIT.
+     *
+     * @param Aucun parametre.
+     * @return Aucun retour.
+     *
+     * @pre Le systeme doit etre initialise avant d'appeler cette fonction.
+     * @post L'application est prete a demarrer.
      */
-
     void APP_Initialize(void);
 
-
-    /*******************************************************************************
-      Function:
-        void APP_Tasks ( void )
-
-      Summary:
-        MPLAB Harmony Demo application tasks function
-
-      Description:
-        This routine is the Harmony Demo application's tasks function.  It
-        defines the application's state machine and core logic.
-
-      Precondition:
-        The system and application initialization ("SYS_Initialize") should be
-        called before calling this.
-
-      Parameters:
-        None.
-
-      Returns:
-        None.
-
-      Example:
-        <code>
-        APP_Tasks();
-        </code>
-
-      Remarks:
-        This routine must be called from SYS_Tasks() routine.
+    /**
+     * @brief Fonction principale de la machine d'etat de l'application.
+     *
+     * @details
+     * Cette fonction gere les differents etats de l'application et execute les actions
+     * associees a chaque etat.
+     *
+     * @param Aucun parametre.
+     * @return Aucun retour.
+     *
+     * @pre L'application doit etre initialisee.
+     * @post Les actions correspondant a l'etat courant sont executees.
      */
-
     void APP_Tasks(void);
 
 

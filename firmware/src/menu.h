@@ -1,14 +1,22 @@
+/*
+--------------------------------------------------------
+ Fichier : menu.h
+ Auteur  : leo mendes
+ Date    : 2024
+ Role    : Declarations et prototypes pour la gestion des menus utilisateur
+--------------------------------------------------------
+*/
 #include <stdint.h>
 #include <stdbool.h>
 
-// Enumération des états de menu disponibles
+// Enumeration des etats de menu disponibles
 typedef enum {
     MENU_WELCOME,
     MENU_BATTERIE,
     MENU_PARAMETRE,
     MENU_CHOIX_PROFIL,
     MENU_SAUVEGARDE,
-    MENU_CONF_NB_HELICE,
+    MENU_CONF_NB_pale,
     MENU_CONF_NB_CYLINDRE,
     MENU_MESURE_VISUEL,
     MENU_MESURE_AUDIO,
@@ -18,14 +26,14 @@ typedef enum {
 /**
  * @brief Initialise et affiche le contenu du menu courant.
  * 
- * Doit être appelée au démarrage et après tout changement d'état de menu.
+ * Doit etre appelee au demarrage et après tout changement d'etat de menu.
  */
 void Menu_Display(void);
 
 /**
- * @brief Traite les événements du menu (boutons).
+ * @brief Traite les evenements du menu (boutons).
  * 
- * Doit être appelée régulièrement dans la boucle principale ou via une tâche.
+ * Doit etre appelee regulièrement dans la boucle principale ou via une tâche.
  */
 void Menu_Task(void);
 

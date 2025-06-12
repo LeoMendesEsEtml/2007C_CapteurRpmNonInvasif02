@@ -1,9 +1,9 @@
 /*******************************************************************************
   MPLAB Harmony Application Source File
-  
+
   Company:
     Microchip Technology Inc.
-  
+
   File Name:
     app.c
 
@@ -11,8 +11,8 @@
     This file contains the source code for the MPLAB Harmony application.
 
   Description:
-    This file contains the source code for the MPLAB Harmony application.  It 
-    implements the logic of the application's state machine and it may call 
+    This file contains the source code for the MPLAB Harmony application.  It
+    implements the logic of the application's state machine and it may call
     API routines of other MPLAB Harmony modules in the system, such as drivers,
     system services, and middleware.  However, it does not call any of the
     system interfaces (such as the "Initialize" and "Tasks" functions) of any of
@@ -46,20 +46,19 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
  *******************************************************************************/
 // DOM-IGNORE-END
 
+// *****************************************************************************
+// *****************************************************************************
+// Section: Included Files
+// *****************************************************************************
+// *****************************************************************************
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: Included Files 
-// *****************************************************************************
-// *****************************************************************************
-
-#include "app.h"
-#include "LCD.h"
-#include "GestBtn.h"
-#include "PotControl.h"
-#include "menu.h"
-#include "ProfilStorage.h"
-#include "system_config.h"
+#include "app.h"           // Inclusion du header principal de l'application
+#include "LCD.h"           // Inclusion du module d'affichage LCD
+#include "GestBtn.h"       // Inclusion du module de gestion des boutons
+#include "PotControl.h"    // Inclusion du module de controle du potentiometre
+#include "menu.h"          // Inclusion du module de gestion des menus
+#include "ProfilStorage.h" // Inclusion du module de stockage des profils
+#include "system_config.h" // Inclusion de la configuration systeme
 
 // *****************************************************************************
 // *****************************************************************************
@@ -78,7 +77,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
   Remarks:
     This structure should be initialized by the APP_Initialize function.
-    
+
     Application strings and buffers are be defined outside this structure.
  */
 
@@ -89,63 +88,104 @@ APP_DATA appData = {
     .captureIndex = 0,
     .rpm = 0,
     .nbBlades = 2,
-    .refreshNeeded = true
-};
+    .refreshNeeded = true};
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: Application Callback Functions
 // *****************************************************************************
 // *****************************************************************************
-#define WAIT_INIT 2999  // Nombre d'itérations approximatives pour 3 secondes
+#define WAIT_INIT 2999 // Nombre d'iterations approximatives pour 3 secondes
 
-void App_Timer1Callback() {
-    // Compteur pour les 3 premières secondes
+// Callback du Timer1, gere l'attente d'initialisation et l'execution periodique des taches
+/**
+ * @brief Callback du Timer1 pour la gestion de l'initialisation et des taches periodiques.
+ *
+ * @details
+ * Cette fonction utilise un compteur pour attendre 3 secondes apres le demarrage,
+ * puis execute periodiquement les taches de service. Elle met a jour l'etat de l'application
+ * en consequence.
+ *
+ * @param Aucun parametre.
+ * @return Aucun retour.
+ *
+ * @pre Le systeme doit etre initialise avant d'appeler cette fonction.
+ * @post L'etat de l'application est mis a jour selon l'avancement de l'initialisation.
+ */
+void App_Timer1Callback()
+{
+    // Compteur pour les 3 premieres secondes
 
     static uint16_t WaitIteration = 0; // Variable statique qui conserve sa valeur entre appels
-    static uint8_t InitDone = 0; // Flag pour indiquer si l'init est terminée
+    static uint8_t InitDone = 0;       // Flag pour indiquer si l'init est terminee
 
-    GestBtn_Update();
-    // Pendant les 3 premières secondes, on incrémente WaitIteration
-    if ((WaitIteration <= WAIT_INIT) && (InitDone == 0)) {
-        WaitIteration++; // Incrémente le compteur d'attente
-    } else {
-        // Si on est toujours dans l'état d'attente d'init (APP_GEN_INIT_WAIT)
-        if (appData.state == APP_STATE_INIT_WAIT) {
-            APP_UpdateState(APP_STATE_SERVICE_TASKS); // Change l'état de l'application
-            InitDone = 1;
-            WaitIteration = 0; // Réinitialise le compteur
-            InitDone = 1; // Note que l'init est terminée
-        } else {
-            // Une fois l'init terminée, on exécute périodiquement le SERVICE_TASKS
-            if (WaitIteration >= 10) {
-                WaitIteration = 0; // Reset du compteur
-                APP_UpdateState(APP_STATE_SERVICE_TASKS); // Demande exécution des tâches
-            } else {
-                WaitIteration++; // Incrémente jusqu'à 10 pour la prochaine exécution
+    GestBtn_Update(); // Met a jour l'etat des boutons
+    // Pendant les 3 premieres secondes, on incremente WaitIteration
+    if ((WaitIteration <= WAIT_INIT) && (InitDone == 0))
+    {
+        WaitIteration++; // Incremente le compteur d'attente
+    }
+    else
+    {
+        // Si on est toujours dans l'etat d'attente d'init (APP_GEN_INIT_WAIT)
+        if (appData.state == APP_STATE_INIT_WAIT)
+        {
+            APP_UpdateState(APP_STATE_SERVICE_TASKS); // Change l'etat de l'application
+            InitDone = 1;                             // Note que l'init est terminee
+            WaitIteration = 0;                        // Reinitialise le compteur
+            InitDone = 1;                             // Note que l'init est terminee
+        }
+        else
+        {
+            // Une fois l'init terminee, on execute periodiquement le SERVICE_TASKS
+            if (WaitIteration >= 10)
+            {
+                WaitIteration = 0;                        // Reset du compteur
+                APP_UpdateState(APP_STATE_SERVICE_TASKS); // Demande execution des tâches
+            }
+            else
+            {
+                WaitIteration++; // Incremente jusqu'a 10 pour la prochaine execution
             }
         }
     }
 }
-#define TIMER_FREQ_HZ     100000000UL  // 100 MHz timer base (PBCLK3)
-#define PULSES_PER_REV    1            // Nombre de fronts par tour
+#define TIMER_FREQ_HZ 100000000UL // 100 MHz timer base (PBCLK3)
+#define PULSES_PER_REV 1          // Nombre de fronts par tour
 
-void DRV_IC3_Callback(void) {
-    if (!appData.rpmCaptureActive) {
-        return;
+/**
+ * @brief Callback pour la capture d'impulsions RPM.
+ *
+ * @details
+ * Cette fonction lit les valeurs capturees par l'input capture et les stocke dans un buffer circulaire
+ * si la capture RPM est active.
+ *
+ * @param Aucun parametre.
+ * @return Aucun retour.
+ *
+ * @pre La capture RPM doit etre active.
+ * @post Le buffer de capture est mis a jour avec la nouvelle valeur.
+ */
+void DRV_IC3_Callback(void)
+{
+    if (!appData.rpmCaptureActive)
+    {
+        return; // Si la capture n'est pas active, on quitte
     }
 
-    if (!DRV_IC0_BufferIsEmpty()) {
-        uint32_t cap = DRV_IC0_Capture32BitDataRead();
-        uint8_t i = appData.captureIndex;
+    if (!DRV_IC0_BufferIsEmpty())
+    {
+        uint32_t cap = DRV_IC0_Capture32BitDataRead(); // Lit la valeur capturee
+        uint8_t i = appData.captureIndex;              // Recupere l'index courant du buffer
 
-        appData.captureBuffer[i] = cap;
-        i = i + 1;
-        if (i >= RPM_CAPTURE_BUFFER_SIZE) {
-            i = 0;
+        appData.captureBuffer[i] = cap; // Stocke la valeur dans le buffer
+        i = i + 1;                      // Incremente l'index
+        if (i >= RPM_CAPTURE_BUFFER_SIZE)
+        {
+            i = 0; // Revient au debut du buffer si necessaire
         }
 
-        appData.captureIndex = i;
+        appData.captureIndex = i; // Met a jour l'index du buffer
     }
 }
 // *****************************************************************************
@@ -155,20 +195,22 @@ void DRV_IC3_Callback(void) {
 // *****************************************************************************
 
 /**
- * @brief Met à jour l'état actuel de l'application.
- * @author LMS - VCO
- * @date 2025-01-02
- * 
- * @param Newstate Nouveau état à affecter à l'application (type APP_STATES).
- * 
- * @details Cette fonction met à jour la variable globale `appData.state` avec
- *          la valeur de l'état fourni en paramètre.
+ * @brief Met a jour l'etat actuel de l'application.
+ *
+ * @details
+ * Cette fonction met a jour la variable globale `appData.state` avec
+ * la valeur de l'etat fourni en parametre.
+ *
+ * @param Newstate Nouveau etat a affecter a l'application (type APP_STATES).
+ * @return Aucun retour.
+ *
+ * @pre Aucun prerequis specifique.
+ * @post L'etat de l'application est mis a jour.
  */
-void APP_UpdateState(APP_STATES Newstate) {
-    // Met à jour l'état de l'application avec le nouvel état spécifié
-    appData.state = Newstate;
+void APP_UpdateState(APP_STATES Newstate)
+{
+    appData.state = Newstate; // Met a jour l'etat de l'application avec le nouvel etat specifie
 }
-
 
 // *****************************************************************************
 // *****************************************************************************
@@ -184,10 +226,22 @@ void APP_UpdateState(APP_STATES Newstate) {
     See prototype in app.h.
  */
 
-void APP_Initialize(void) {
-    /* Place the App state machine in its initial state. */
-    appData.state = APP_STATE_INIT;
-    //PLIB_TMR_Period32BitSet(TMR_ID_2, 0xFFFFFFFF); // timer libre
+/**
+ * @brief Initialise l'application et place la machine d'etat dans son etat initial.
+ *
+ * @details
+ * Cette fonction initialise l'etat de l'application a APP_STATE_INIT.
+ *
+ * @param Aucun parametre.
+ * @return Aucun retour.
+ *
+ * @pre Le systeme doit etre initialise avant d'appeler cette fonction.
+ * @post L'application est prete a demarrer.
+ */
+void APP_Initialize(void)
+{
+    appData.state = APP_STATE_INIT; // Place la machine d'etat dans son etat initial
+    // PLIB_TMR_Period32BitSet(TMR_ID_2, 0xFFFFFFFF); // timer libre (commente)
 }
 
 /******************************************************************************
@@ -198,83 +252,100 @@ void APP_Initialize(void) {
     See prototype in app.h.
  */
 
-void APP_Tasks(void) {
-    uint8_t val;
+/**
+ * @brief Fonction principale de la machine d'etat de l'application.
+ *
+ * @details
+ * Cette fonction gere les differents etats de l'application et execute les actions
+ * associees a chaque etat.
+ *
+ * @param Aucun parametre.
+ * @return Aucun retour.
+ *
+ * @pre L'application doit etre initialisee.
+ * @post Les actions correspondant a l'etat courant sont executees.
+ */
+void APP_Tasks(void)
+{
+    uint8_t val; // Variable pour stocker la valeur lue
 
-    switch (appData.state) {
-        case APP_STATE_INIT:
+    switch (appData.state)
+    {
+    case APP_STATE_INIT:
+    {
+        BL_CONTROL_On();       // Allume le retroeclairage
+        Profils_LoadFromNVM(); // Charge les profils depuis la memoire non volatile
+
+        SPI_ConfigurePot();            // Configure le potentiometre via SPI
+        lcd_init();                    // Initialise l'ecran LCD
+        GestBtn_Init();                // Initialise la gestion des boutons
+        lcd_set_cursor(1, 1);          // Place le curseur sur la premiere ligne
+        lcd_put_string("Capteur RPM"); // Affiche le texte sur la premiere ligne
+        lcd_set_cursor(1, 2);          // Place le curseur sur la deuxieme ligne
+        lcd_put_string("LMS");         // Affiche le texte sur la deuxieme ligne
+
+        DRV_TMR0_Start(); // Demarre le timer principal
+
+        EN_LDO_On(); // Active le LDO
+        IR_EN_Off(); // Desactive l'emetteur IR
+
+        lcd_set_cursor(1, 1);                // Replace le curseur sur la premiere ligne
+        Pot_Write(POT_INDEX_U5_WIPER0, 70);  // Definit la valeur du potentiometre U5 W0
+        Pot_Write(POT_INDEX_U3_WIPER0, 30);  // Definit la valeur du potentiometre U3 W0
+        Pot_Write(POT_INDEX_U3_WIPER1, 250); // Definit la valeur du potentiometre U3 W1
+
+        if (Pot_Read(POT_INDEX_U3_WIPER0, &val))
         {
-            BL_CONTROL_On();
-            Profils_LoadFromNVM();
-
-
-            SPI_ConfigurePot();
-            lcd_init();
-            GestBtn_Init();
-            lcd_set_cursor(1, 1);
-            lcd_put_string("Capteur RPM");
-            lcd_set_cursor(1, 2);
-            lcd_put_string("LMS");
-
-            DRV_TMR0_Start();
-
-            EN_LDO_On();
-            IR_EN_Off();
-
-            lcd_set_cursor(1, 1);
-            Pot_Write(POT_INDEX_U5_WIPER0, 70);
-            Pot_Write(POT_INDEX_U3_WIPER0, 30);
-            Pot_Write(POT_INDEX_U3_WIPER1, 250);
-
-            if (Pot_Read(POT_INDEX_U3_WIPER0, &val)) {
-                lcd_set_cursor(1, 1);
-                lcd_printf("U3 W0: %3d", val);
-            } else {
-                lcd_put_string("U3 W0: ERR");
-            }
-
-            lcd_set_cursor(1, 2);
-            if (Pot_Read(POT_INDEX_U3_WIPER1, &val)) {
-                lcd_printf("U3 W1: %3d", val);
-            } else {
-                lcd_put_string("U3 W1: ERR");
-            }
-
-            APP_UpdateState(APP_STATE_INIT_WAIT);
-            break;
+            lcd_set_cursor(1, 1);          // Place le curseur sur la premiere ligne
+            lcd_printf("U3 W0: %3d", val); // Affiche la valeur lue
+        }
+        else
+        {
+            lcd_put_string("U3 W0: ERR"); // Affiche une erreur si la lecture echoue
         }
 
-        case APP_STATE_INIT_WAIT:
+        lcd_set_cursor(1, 2); // Place le curseur sur la deuxieme ligne
+        if (Pot_Read(POT_INDEX_U3_WIPER1, &val))
         {
-            // Tout est géré par le callback Timer1
-            break;
+            lcd_printf("U3 W1: %3d", val); // Affiche la valeur lue
+        }
+        else
+        {
+            lcd_put_string("U3 W1: ERR"); // Affiche une erreur si la lecture echoue
         }
 
-        case APP_STATE_WAIT:
-        {
-            break;
-        }
+        APP_UpdateState(APP_STATE_INIT_WAIT); // Passe a l'etat d'attente d'initialisation
+        break;
+    }
 
-        case APP_STATE_SERVICE_TASKS:
-        {
+    case APP_STATE_INIT_WAIT:
+    {
+        // Tout est gere par le callback Timer1
+        break;
+    }
+
+    case APP_STATE_WAIT:
+    {
+        break;
+    }
+
+    case APP_STATE_SERVICE_TASKS:
+    {
 #ifdef DEBUG_MEMORY
-            Profils_TestSaveLoad();
+        Profils_TestSaveLoad(); // Teste la sauvegarde/lecture des profils (debug)
 #endif
-            Menu_Task();
-            APP_UpdateState(APP_STATE_WAIT);
-            break;
-        }
+        Menu_Task();                     // Execute la tâche du menu
+        APP_UpdateState(APP_STATE_WAIT); // Passe a l'etat d'attente
+        break;
+    }
 
-        default:
-        {
-            // Erreur inattendue
-            break;
-        }
+    default:
+    {
+        // Erreur inattendue
+        break;
+    }
     }
 }
-
-
-
 
 /*******************************************************************************
  End of File

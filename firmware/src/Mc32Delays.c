@@ -2,22 +2,22 @@
 //	Mc32Delays.c
 /*--------------------------------------------------------*/
 //	Description :	Fonctions de delay afin
-//			de pouvoir utiliser la même syntaxe
+//			de pouvoir utiliser la meme syntaxe
 //			que sous CCS.
 //
-//	Auteurs 		: 	F. Dominé / C. Huber
+//	Auteurs 		: 	F. Domine / C. Huber
 //
 //	Version		:	V2.0
-//	Compilateur	:	nécessaire pour XC32 V 1.40
+//	Compilateur	:	necessaire pour XC32 V 1.40
 //
-// Revu / modifié:
+// Revu / modifie:
 // CHR 17.12.2015    besoin du fichier maison Mc32CoreTimer.h
-// SCA 11.10.2016   ajouté fonction délais core timer
+// SCA 11.10.2016   ajoute fonction delais core timer
 /*--------------------------------------------------------*/
 
 
 #include "Mc32Delays.h"
-// Nécessaire pour la fonction delay_msCt
+// Necessaire pour la fonction delay_msCt
 //#include "Mc32CoreTimer.h"
 #include <xc.h> //pour les fonctions d'accès au Core Timer
 #include <stdint.h>
@@ -27,7 +27,7 @@
 /*--------------------------------------------------------*/
 void delay500ns(void)
 {
-  // Il a fallu touiller un peu pour arriver à 500ns
+  // Il a fallu touiller un peu pour arriver a 500ns
   // CHR 09.09.2014 avec 8 250 ns avec 9 612 ns ??????
 	unsigned int cptcycles;
 	  for (cptcycles=0; cptcycles < 9; cptcycles++) {
@@ -40,7 +40,7 @@ void delay500ns(void)
 /*--------------------------------------------------------*/
 void delay_us(unsigned int us)
 {
-  // Il a fallu touiller un peu pour arriver à la us
+  // Il a fallu touiller un peu pour arriver a la us
   // CHR 09.09.2014 grosse retouche 17 au lieu de 3 ???????
 	unsigned int i,j,cptcycles;
 	for(i=1;i<=us;i++){
@@ -83,18 +83,18 @@ void delay_ms(unsigned int ms)
 }
 
 /*--------------------------------------------------------*/
-// Fonctions de délais utilisant le Core Timer
+// Fonctions de delais utilisant le Core Timer
 /*--------------------------------------------------------*/
 //SCA 11.10.2016:
 // 1. mis les fonctions du Core Timer
 //  _CP0_GET_COUNT() : lecture valeur Core Timer
-//  et _CP0_SET_COUNT() : écriture nouvelle valeur Core Timer
+//  et _CP0_SET_COUNT() : ecriture nouvelle valeur Core Timer
 //  en dur dans ce fichier
-// 2. Forcé l'optimisation 0 des fonctions delay_msCt() et delay_usCt()
+// 2. Force l'optimisation 0 des fonctions delay_msCt() et delay_usCt()
 // ci-dessous
-// Tout ceci pour éviter toute optimisation et obtenir un comportement reproductible
+// Tout ceci pour eviter toute optimisation et obtenir un comportement reproductible
 //
-// Fonctions testées avec MPLABX 3.40, xc32 1.42 et Harmony 1.08.01 sur Starter-kit ES
+// Fonctions testees avec MPLABX 3.40, xc32 1.42 et Harmony 1.08.01 sur Starter-kit ES
 // PIC32MXF795L @ 80 MHz. Mesures :
 //  Fonction    |    delta(cycles@80MHz, optimisation 0) delta(cycles@80MHz, optimisation 1)
 //  ------------+---------------------------------------------------------------------------
@@ -102,19 +102,19 @@ void delay_ms(unsigned int ms)
 //  delay_usCt  |    +3                                  +4
 //  delay500nsCt|    0 (exact)                           +3 (537.5ns)
 
-// Les délais sont exacts en optimisation 1. 4 cycles CPU de surplus en optimisation 0
+// Les delais sont exacts en optimisation 1. 4 cycles CPU de surplus en optimisation 0
 // (appels aux fonctions ? / toggle des IO ?)
 
 #ifndef SYS_FREQ
 #define SYS_FREQ 200000000L   // 200 MHz
 #endif
 
-//le core timer est incrémenté tous les 2 SYSCLK
+//le core timer est incremente tous les 2 SYSCLK
 #define TICK_CT_MS (SYS_FREQ / 2000L)
 #define TICK_CT_US (SYS_FREQ / 2000000L)
-#define TICK_OVERHEAD 7    //pour ajustement. mesuré 15 cycles Core Timer de surplus
+#define TICK_OVERHEAD 7    //pour ajustement. mesure 15 cycles Core Timer de surplus
 //valeur quasi-fixe (pu observer 3 cycles CPU en plus en optimisation 0
-//par rapport à 1.
+//par rapport a 1.
 
 /*--------------------------------------------------------*/
 // Fonction delay_msCt Core Timer
