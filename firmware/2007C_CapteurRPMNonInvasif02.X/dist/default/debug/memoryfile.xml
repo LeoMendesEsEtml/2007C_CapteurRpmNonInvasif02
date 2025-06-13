@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<project>                                  
+  <executable name="dist/default/debug/2007C_CapteurRPMNonInvasif02.X.debug.elf">                 
+    <memory name="program">                 
+      <units>bytes</units>                 
+      <length>2098304</length>                 
+      <used>34860</used>                     
+      <free>2063444</free>                     
+    </memory>                              
+    <memory name="data">              
+      <units>bytes</units>                 
+      <length>525184</length>                 
+      <used>2412</used>                     
+      <free>522772</free>                     
+    </memory>                              
+  </executable>                            
+</project>                                 

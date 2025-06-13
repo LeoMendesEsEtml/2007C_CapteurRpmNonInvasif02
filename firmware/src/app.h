@@ -96,6 +96,8 @@ extern "C" {
 
     } APP_STATES;
 
+#define WAIT_INIT 2999 // Nombre d'iterations approximatives pour 3 secondes
+#define RPM_CAPTURE_BUFFER_SIZE 8 // Taille du buffer de capture RPM
 
     // *****************************************************************************
 
@@ -110,7 +112,7 @@ extern "C" {
           Remarques :
             Les chaines et buffers de l'application sont definis en dehors de cette structure.
      */
-#define RPM_CAPTURE_BUFFER_SIZE 8 // Taille du buffer de capture RPM
+
 
     typedef struct {
         uint8_t state; // etat courant de l'application
@@ -123,7 +125,7 @@ extern "C" {
         uint8_t nbBlades; // Nombre de pales
         uint8_t nbCylindres; // Nombre de cylindres
         bool refreshNeeded; // Indique si un rafraichissement de l'affichage est necessaire
-        uint8_t  selectedProfil;   // 0-3 : profil actif
+        uint8_t selectedProfil; // 0-3 : profil actif
     } APP_DATA;
 
     extern APP_DATA appData; // Declaration de la variable globale des donnees de l'application

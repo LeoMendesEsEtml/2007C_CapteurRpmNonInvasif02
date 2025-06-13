@@ -2,6 +2,7 @@
 #include "peripheral/ports/plib_ports.h" // Inclusion des fonctions de gestion des ports
 #include "system_config.h" // Inclusion de la configuration systeme
 #include "GestBtn.h" // Inclusion du header de gestion des boutons
+
 // --- Parametres internes de debounce ---
 static const uint8_t kMaxDebounceCount = 5; // Nombre d'iterations pour valider un changement
 
