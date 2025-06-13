@@ -2,7 +2,7 @@
 
 ## 📌 Description
 
-Programme fonctionnel sur la carte **PCB2007C** développée dans le cadre du projet 2007C à l’**ETML-es**.  
+Programme fonctionnel sur la carte **2007C** développée dans le cadre du projet 2007C à l’**ETML-es**.  
 L’objectif est de mesurer la vitesse de rotation des hélices d’un avion **sans contact** avec l’appareil, grâce à différents capteurs embarqués.
 
 Trois types de mesures sont prévus :
@@ -27,8 +27,6 @@ C:\microchip\harmony\v2_06\apps
 - **Compilateur** : xc32 2.x  
 - **Framework** : Harmony 2.06  
 - **MCU** : PIC32MZ2048EFM064-I/PT  
-- **Afficheur** : NHD-C0220BIZ-FSW-FBW-3V3M  
-- **Technos** : ADC, PWM, IC, SPI, I2C, menu FSM, KissFFT
 
 ---
 
@@ -37,14 +35,14 @@ C:\microchip\harmony\v2_06\apps
 | Fonctionnalité                        | Statut |
 |--------------------------------------|--------|
 | Menu LCD complet                     | OK     |
-| Sauvegarde NVM                       | ❌     |
-| Lecture tension batterie             | ⚠️ partielle |
+| Sauvegarde NVM                       | ❌ NOK |
+| Lecture tension batterie             | ❌ Non implémentée |
 | Mesure RPM par IR                    | ✅ Preuve de concept validée |
 | Mesure RPM par microphone            | ❌ Micro HS / Schéma à corriger |
 | Mesure RPM par accéléromètre         | ❌ SPI instable |
-| Auto-calibration IR                  | ⚠️ À implémenter |
+| Auto-calibration IR                  | ❌ Non implémentée |
 | Communication USART (RS485 / USB)    | ❌ Non implémentée |
-| FFT avec KissFFT                     | ⚠️ Tests partiels uniquement |
+| FFT avec KissFFT                     | ❌ Non implémentée |
 
 ---
 
@@ -66,17 +64,4 @@ C:\microchip\harmony\v2_06\apps
 ## 🧾 Remarques
 
 Ce dépôt contient le firmware embarqué ainsi que les configurations MPLAB Harmony.  
-Le code a été pensé pour être **évolutif**, avec gestion des profils, test de différentes technologies de détection, et validation terrain en cockpit.
-
 ---
-
-## 🔧 À faire / Améliorations futures
-
-- Refonte du routage PCB (corrections LDO / SPI / rainures)
-- Intégration complète de l’accéléromètre via module piggyback
-- Communication série active (pour FFT avec Octave)
-- Menu plus robuste avec gestion d’erreurs
-- Finalisation de la mesure IR avec réglage dynamique
-- Ajout EEPROM externe pour sécuriser les profils
-
-
