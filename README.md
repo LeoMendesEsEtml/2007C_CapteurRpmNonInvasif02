@@ -49,7 +49,8 @@ C:\microchip\harmony\v2_06\apps
 ## 📂 Dépôt GitHub
 
 [2007C_CapteurRpmNonInvasif02](https://github.com/LeoMendesEsEtml/2007C_CapteurRpmNonInvasif02)
-
+**Documentation Doxygen (fonctions, structures, modules)** :  
+➡️ https://capteurrpmnoninvasifpouravion.neocities.org/files
 ---
 
 ## 👤 Auteur
